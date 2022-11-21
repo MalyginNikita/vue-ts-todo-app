@@ -1,32 +1,52 @@
 <template>
-  <div id="app">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
-    <router-view/>
-  </div>
+    <div id="app">
+        <Header :add-task="addTask"></Header>
+        <router-view
+            :do-check="doCheck"
+            :remove-mask="removeMask"
+            :need-do-list="needDoList"
+            :complete-list="completeList"
+        ></router-view>
+    </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script lang="ts">
+import ToDoList from './components/ToDoList.vue';
+import Header from './components/Header.vue';
+import { Component, Vue } from 'vue-property-decorator';
 
-nav {
-  padding: 30px;
+@Component({
+    components: {
+        ToDoList,
+        Header,
+    },
+})
+export default class App extends Vue {
+    needDoList: Array<object> = [];
+    completeList: Array<object> = [];
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+    doCheck(index: number, type: string) {
+        if (type === 'need') {
+            const completeMask = this.needDoList.splice(index, 1);
+            this.completeList.push(...completeMask);
+        } else {
+            const noCompleteMask = this.completeList.splice(index, 1);
+            this.needDoList.push(...noCompleteMask);
+        }
     }
-  }
+    removeMask(index: number, type: string) {
+        const toDoList = type === 'need' ? this.needDoList : this.completeList;
+        toDoList.splice(index, 1);
+    }
+    addTask(value: string) {
+        if (value === '') {
+            return;
+        }
+        this.needDoList.push({
+            title: value,
+            id: Date.now().toString(),
+        });
+        //this.value = '';
+    }
 }
-</style>
+</script>
